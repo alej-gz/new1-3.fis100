@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papelógrafo – Equilibrio de una Partícula</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f5f0e8;
+    --paper:    #fefcf6;
+    --ink:      #1a1209;
+    --red:      #c0392b;
+    --blue:     #1a4480;
+    --gold:     #b8860b;
+    --green:    #1d6b44;
+    --border:   #8b6914;
+    --rule:     #c9a84c;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Source Serif 4', serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── PAGE WRAPPER ── */
+  .page {
+    width: 900px;
+    margin: 24px auto;
+    background: var(--paper);
+    border: 4px double var(--border);
+    box-shadow: 6px 6px 0 #b89a3a, 12px 12px 0 rgba(0,0,0,.12);
+    padding: 32px 36px 36px;
+    position: relative;
+    background-image:
+      repeating-linear-gradient(transparent, transparent 27px, #e8dfc8 28px);
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    border-bottom: 3px double var(--border);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .header::before, .header::after {
+    content: '✦';
+    color: var(--gold);
+    font-size: 1.2rem;
+    position: absolute;
+    top: 4px;
+  }
+  .header::before { left: 0; }
+  .header::after  { right: 0; }
+
+  .chapter-label {
+    font-family: 'Source Serif 4', serif;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--blue);
+    margin: 4px 0 6px;
+  }
+  .subtitle {
+    font-size: .85rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .full { grid-column: 1 / -1; }
+  .col3 { grid-column: span 1; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--paper);
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    padding: 14px 16px;
+    position: relative;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blue);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon {
+    width: 22px; height: 22px;
+    background: var(--blue);
+    color: #fff;
+    border-radius: 50%;
+    font-size: .7rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Source Serif 4', serif;
+  }
+  .card p {
+    font-size: .78rem;
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight {
+    background: #fff9e6;
+    border-left: 4px solid var(--gold);
+    padding: 8px 12px;
+    margin: 8px 0;
+    font-size: .78rem;
+    font-style: italic;
+    line-height: 1.5;
+    border-radius: 0 2px 2px 0;
+  }
+  .highlight strong { font-style: normal; color: var(--red); }
+
+  /* ── FORMULA BOX ── */
+  .formula {
+    background: #eef3fb;
+    border: 1.5px solid var(--blue);
+    border-radius: 3px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    text-align: center;
+    font-size: .9rem;
+    font-family: 'Georgia', serif;
+    color: var(--blue);
+    letter-spacing: .04em;
+  }
+  .formula sub, .formula sup { font-size: .65em; }
+
+  /* ── DEFINITION LIST ── */
+  .def-list { list-style: none; }
+  .def-list li {
+    font-size: .78rem;
+    line-height: 1.5;
+    padding: 4px 0 4px 16px;
+    border-bottom: 1px dotted #d4c38a;
+    position: relative;
+  }
+  .def-list li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: .55rem;
+    top: 7px;
+  }
+  .def-list li:last-child { border-bottom: none; }
+  .def-list strong { color: var(--red); }
+
+  /* ── SVG DIAGRAM ── */
+  .diagram-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 6px 0 4px;
+  }
+  svg text { font-family: 'Source Serif 4', serif; }
+
+  /* ── STEPS ── */
+  .steps { list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    font-size: .76rem;
+    line-height: 1.5;
+    padding: 5px 0 5px 30px;
+    border-bottom: 1px dotted #d4c38a;
+    position: relative;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 4px;
+    width: 20px; height: 20px;
+    background: var(--green);
+    color: #fff;
+    border-radius: 50%;
+    font-size: .65rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* ── TWO-COL INSIDE CARD ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+
+  /* ── BANNER ── */
+  .banner {
+    background: var(--blue);
+    color: #fff;
+    text-align: center;
+    padding: 8px 16px;
+    margin: 10px 0;
+    border-radius: 2px;
+    font-family: 'Playfair Display', serif;
+    font-size: .95rem;
+    letter-spacing: .03em;
+  }
+  .banner span { color: #f0c040; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .72rem;
+    margin-top: 6px;
+  }
+  th {
+    background: var(--blue);
+    color: #fff;
+    padding: 5px 8px;
+    text-align: left;
+    font-family: 'Playfair Display', serif;
+    font-size: .72rem;
+  }
+  td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7f3e8; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    margin-top: 18px;
+    font-size: .68rem;
+    color: #888;
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+    letter-spacing: .05em;
+  }
+
+  /* ── RED EMPHASIS ── */
+  em.key { font-style: normal; font-weight: 600; color: var(--red); }
+  em.def { font-style: italic; color: var(--green); font-weight: 600; }
+
+  .tag {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    font-size: .6rem;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-family: 'Source Serif 4', serif;
+    letter-spacing: .08em;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="chapter-label">Capítulo 4 · Física Mecánica</div>
+    <h1>Equilibrio de una Partícula</h1>
+    <div class="subtitle">Estática · Fuerzas · Leyes de Newton · Rozamiento</div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <!-- ── CONCEPTOS FUNDAMENTALES ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">1</span>Conceptos Fundamentales</div>
+
+      <div class="highlight">
+        <strong>Equilibrio:</strong> Un objeto está en equilibrio cuando <strong>la fuerza neta es igual a cero</strong> (sin aceleración).
+      </div>
+
+      <ul class="def-list">
+        <li><strong>Estático:</strong> cuerpo en reposo — v = 0, a = 0</li>
+        <li><strong>Cinético:</strong> cuerpo con velocidad constante — a = 0</li>
+        <li><strong>Estable:</strong> retoma solo su posición inicial</li>
+        <li><strong>Inestable:</strong> necesita fuerza extra para volver</li>
+        <li><strong>Indiferente:</strong> equilibrio en cualquier posición</li>
+      </ul>
+
+      <div class="formula">
+        <strong>R⃗ = ΣF⃗ = 0</strong><br>
+        ΣF<sub>x</sub> = 0 &nbsp;|&nbsp; ΣF<sub>y</sub> = 0
+      </div>
+    </div>
+
+    <!-- ── TIPOS DE FUERZA ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">2</span>Tipos de Fuerza</div>
+
+      <ul class="def-list">
+        <li><strong>Contacto:</strong> implica contacto físico directo</li>
+        <li><strong>Normal (N):</strong> perpendicular a la superficie</li>
+        <li><strong>Tensión (T):</strong> ejercida por cuerdas (solo jalan)</li>
+        <li><strong>Fricción (f<sub>r</sub>):</strong> paralela a la superficie, opuesta al movimiento</li>
+        <li><strong>Campo:</strong> actúan a distancia (gravedad, electromagnética)</li>
+        <li><strong>Peso (W):</strong> W = m · g (fuerza gravitacional)</li>
+      </ul>
+
+      <!-- mini SVG: fuerza normal en plano inclinado -->
+      <div class="diagram-wrap">
+        <svg width="200" height="90" viewBox="0 0 200 90">
+          <!-- plano inclinado -->
+          <polygon points="10,80 190,80 190,30" fill="#d4c38a" stroke="#8b6914" stroke-width="1.5"/>
+          <!-- bloque -->
+          <rect x="120" y="42" width="28" height="22" rx="2" fill="#c8ddf5" stroke="#1a4480" stroke-width="1.5" transform="rotate(-15 134 53)"/>
+          <!-- Normal -->
+          <line x1="134" y1="50" x2="118" y2="22" stroke="#c0392b" stroke-width="2" marker-end="url(#arr)"/>
+          <!-- Peso -->
+          <line x1="134" y1="50" x2="134" y2="80" stroke="#1d6b44" stroke-width="2" marker-end="url(#arr2)"/>
+          <!-- labels -->
+          <text x="104" y="18" font-size="11" fill="#c0392b" font-weight="700">N</text>
+          <text x="138" y="80" font-size="11" fill="#1d6b44" font-weight="700">W</text>
+          <defs>
+            <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#c0392b"/>
+            </marker>
+            <marker id="arr2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#1d6b44"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+      <p style="text-align:center; font-size:.68rem; color:#666; font-style:italic;">N ⊥ superficie · W vertical hacia abajo</p>
+    </div>
+
+    <!-- ── 1ª LEY DE NEWTON ── -->
+    <div class="card full">
+      <div class="card-title"><span class="icon">3</span>Primera Ley de Newton — Ley de la Inercia</div>
+      <div class="two-col">
+        <div>
+          <div class="highlight">
+            <strong>"En ausencia de fuerzas externas</strong>, un objeto en reposo permanece en reposo y uno en movimiento sigue con <strong>velocidad constante</strong>."
+          </div>
+          <ul class="def-list" style="margin-top:4px">
+            <li><strong>Inercia:</strong> resistencia a cambiar el estado de movimiento</li>
+            <li><strong>Masa:</strong> medida de la inercia (escalar, constante universal)</li>
+            <li><strong>Marco inercial:</strong> donde ΣF = 0 ⇒ a = 0</li>
+          </ul>
+        </div>
+        <div>
+          <div class="formula" style="margin-top:4px">
+            Si &nbsp; ΣF = 0<br>
+            entonces &nbsp; <strong>a = 0</strong><br><br>
+            v = 0 &nbsp;(reposo)<br>
+            ó &nbsp; v = cte. &nbsp;(M.U.)
+          </div>
+          <p style="font-size:.72rem; margin-top:6px; color:#555; font-style:italic; text-align:center;">La 1ª ley solo es válida en<br>marcos de referencia inerciales.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRIMERA CONDICIÓN DE EQUILIBRIO ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">4</span>1ª Condición de Equilibrio</div>
+      <p>Las fuerzas deben ser <em class="key">coplanarias</em> (mismo plano) y <em class="key">concurrentes</em> (convergen en un punto).</p>
+
+      <!-- SVG: vectores concurrentes -->
+      <div class="diagram-wrap">
+        <svg width="200" height="100" viewBox="0 0 200 100">
+          <defs>
+            <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c0392b"/></marker>
+            <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d6b44"/></marker>
+            <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a4480"/></marker>
+            <marker id="a4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b8860b"/></marker>
+          </defs>
+          <!-- centro -->
+          <circle cx="100" cy="55" r="5" fill="#1a1209"/>
+          <text x="104" y="52" font-size="9" fill="#1a1209">O</text>
+          <!-- 4 fuerzas -->
+          <line x1="100" y1="55" x2="150" y2="30" stroke="#c0392b" stroke-width="2" marker-end="url(#a1)"/>
+          <text x="153" y="27" font-size="10" fill="#c0392b" font-weight="700">F₁</text>
+          <line x1="100" y1="55" x2="160" y2="65" stroke="#1d6b44" stroke-width="2" marker-end="url(#a2)"/>
+          <text x="163" y="65" font-size="10" fill="#1d6b44" font-weight="700">F₂</text>
+          <line x1="100" y1="55" x2="60" y2="90" stroke="#1a4480" stroke-width="2" marker-end="url(#a3)"/>
+          <text x="45" y="95" font-size="10" fill="#1a4480" font-weight="700">F₃</text>
+          <line x1="100" y1="55" x2="50" y2="25" stroke="#b8860b" stroke-width="2" marker-end="url(#a4)"/>
+          <text x="36" y="22" font-size="10" fill="#b8860b" font-weight="700">F₄</text>
+        </svg>
+      </div>
+
+      <div class="formula">ΣF<sub>x</sub> = 0 &nbsp;&nbsp; ΣF<sub>y</sub> = 0</div>
+      <p style="font-size:.72rem; color:#555; text-align:center; font-style:italic;">El polígono vectorial cierra → R⃗ = 0</p>
+    </div>
+
+    <!-- ── DCL ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">5</span>Diagrama de Cuerpo Libre (D.C.L.)</div>
+      <p>Representación de <em class="key">todas</em> las fuerzas que actúan sobre el cuerpo de análisis.</p>
+      <ol class="steps" style="margin-top:8px">
+        <li>Aislar el cuerpo del entorno</li>
+        <li>¿Actúan fuerzas de campo? → Peso W</li>
+        <li>¿Contacto con cuerdas/varillas? → Tensión T / Fuerza F</li>
+        <li>¿Fuerzas mecánicas externas?</li>
+        <li>¿Contacto con otra superficie? → Normal N + Rozamiento f<sub>r</sub></li>
+      </ol>
+
+      <!-- mini DCL -->
+      <div class="diagram-wrap" style="margin-top:10px">
+        <svg width="200" height="95" viewBox="0 0 200 95">
+          <defs>
+            <marker id="b1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c0392b"/></marker>
+            <marker id="b2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d6b44"/></marker>
+            <marker id="b3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a4480"/></marker>
+            <marker id="b4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b8860b"/></marker>
+          </defs>
+          <!-- suelo -->
+          <rect x="20" y="80" width="160" height="8" fill="#c9a84c" rx="1"/>
+          <line x1="20" y1="80" x2="180" y2="80" stroke="#8b6914" stroke-width="1"/>
+          <!-- bloque -->
+          <rect x="72" y="52" width="56" height="28" rx="2" fill="#c8ddf5" stroke="#1a4480" stroke-width="1.5"/>
+          <text x="85" y="70" font-size="10" fill="#1a4480" font-weight="700">m</text>
+          <!-- N -->
+          <line x1="100" y1="52" x2="100" y2="20" stroke="#c0392b" stroke-width="2" marker-end="url(#b1)"/>
+          <text x="104" y="16" font-size="10" fill="#c0392b" font-weight="700">N</text>
+          <!-- W -->
+          <line x1="100" y1="80" x2="100" y2="94" stroke="#1d6b44" stroke-width="2" marker-end="url(#b2)"/>
+          <text x="104" y="94" font-size="10" fill="#1d6b44" font-weight="700">W</text>
+          <!-- F -->
+          <line x1="128" y1="66" x2="168" y2="66" stroke="#1a4480" stroke-width="2" marker-end="url(#b3)"/>
+          <text x="170" y="70" font-size="10" fill="#1a4480" font-weight="700">F</text>
+          <!-- fr -->
+          <line x1="72" y1="66" x2="38" y2="66" stroke="#b8860b" stroke-width="2" marker-end="url(#b4)"/>
+          <text x="20" y="70" font-size="10" fill="#b8860b" font-weight="700">f<tspan font-size="7">r</tspan></text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ── 3ª LEY + ROZAMIENTO ── -->
+    <div class="card full">
+      <div class="card-title"><span class="icon">6</span>Tercera Ley de Newton · Normal · Rozamiento</div>
+      <div class="two-col">
+        <div>
+          <div class="highlight">
+            <strong>3ª Ley (Acción–Reacción):</strong> Cuando dos cuerpos interactúan se ejercen fuerzas de igual magnitud, misma línea de acción y sentidos opuestos.
+          </div>
+          <div class="formula" style="font-size:.8rem;">F⃗<sub>A→B</sub> = −F⃗<sub>B→A</sub></div>
+          <p style="font-size:.74rem; margin-top:6px;">La <em class="key">Normal (N)</em> es la componente <strong>perpendicular</strong> a la superficie. La <em class="key">Fricción (f<sub>r</sub>)</em> es la componente <strong>paralela</strong> a la superficie.</p>
+        </div>
+        <div>
+          <table>
+            <tr>
+              <th>Tipo</th><th>Condición</th><th>Fórmula</th>
+            </tr>
+            <tr>
+              <td><strong>Estática</strong></td>
+              <td>Cuerpo en reposo, movimiento inminente</td>
+              <td>f<sub>rs</sub> = μ<sub>s</sub> · N</td>
+            </tr>
+            <tr>
+              <td><strong>Cinética</strong></td>
+              <td>Cuerpo en movimiento (M.U. ó M.U.A.)</td>
+              <td>f<sub>rk</sub> = μ<sub>k</sub> · N</td>
+            </tr>
+          </table>
+          <div class="formula" style="margin-top:8px; font-size:.78rem;">
+            f<sub>rk</sub> &lt; f<sub>rs</sub> &nbsp;·&nbsp; 0 ≤ μ ≤ 1
+          </div>
+          <p style="font-size:.7rem; color:#555; font-style:italic; margin-top:4px;">μ depende de la naturaleza de las superficies en contacto.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUPERPOSICIÓN + COMPONENTES ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">7</span>Superposición de Fuerzas</div>
+      <p>Varias fuerzas aplicadas en un punto equivalen a <em class="key">una sola fuerza resultante</em> igual a su suma vectorial.</p>
+
+      <div class="formula">
+        R⃗ = F⃗₁ + F⃗₂ + ··· = ΣF⃗<br><br>
+        F<sub>x</sub> = F cos θ &nbsp;·&nbsp; F<sub>y</sub> = F sin θ
+      </div>
+
+      <div class="diagram-wrap">
+        <svg width="180" height="90" viewBox="0 0 180 90">
+          <defs>
+            <marker id="c1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c0392b"/></marker>
+            <marker id="c2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a4480"/></marker>
+            <marker id="c3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b8860b"/></marker>
+          </defs>
+          <!-- axes -->
+          <line x1="20" y1="75" x2="170" y2="75" stroke="#bbb" stroke-width="1"/>
+          <line x1="20" y1="75" x2="20" y2="10" stroke="#bbb" stroke-width="1"/>
+          <text x="172" y="78" font-size="9" fill="#888">x</text>
+          <text x="14" y="8" font-size="9" fill="#888">y</text>
+          <!-- Fx -->
+          <line x1="20" y1="75" x2="120" y2="75" stroke="#1a4480" stroke-width="2" marker-end="url(#c2)" stroke-dasharray="5,3"/>
+          <text x="62" y="87" font-size="9" fill="#1a4480">Fx</text>
+          <!-- Fy -->
+          <line x1="20" y1="75" x2="20" y2="30" stroke="#1a4480" stroke-width="2" marker-end="url(#c2)" stroke-dasharray="5,3"/>
+          <text x="4" y="55" font-size="9" fill="#1a4480">Fy</text>
+          <!-- F resultante -->
+          <line x1="20" y1="75" x2="120" y2="30" stroke="#c0392b" stroke-width="2.5" marker-end="url(#c1)"/>
+          <text x="72" y="46" font-size="10" fill="#c0392b" font-weight="700">F⃗</text>
+          <!-- angle arc -->
+          <path d="M 46,75 A 26,26 0 0,0 26.5,55" fill="none" stroke="#b8860b" stroke-width="1.5"/>
+          <text x="46" y="68" font-size="9" fill="#b8860b">θ</text>
+          <!-- dashed lines -->
+          <line x1="120" y1="75" x2="120" y2="30" stroke="#aaa" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="20" y1="30" x2="120" y2="30" stroke="#aaa" stroke-width="1" stroke-dasharray="3,3"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ── MODELO DE RESOLUCIÓN ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">8</span>Modelo de Resolución de Problemas</div>
+      <ol class="steps">
+        <li>Interpretar el problema — identificar datos e incógnitas</li>
+        <li>Determinar el sistema de unidades (F tiene máxima jerarquía)</li>
+        <li>Dibujo gráfico — identificar cada cuerpo (partícula o cuerpo rígido)</li>
+        <li>Verificar equilibrio: v=0 ó v=cte → a=0</li>
+        <li>Elaborar el D.C.L. con las 5 preguntas de control</li>
+        <li>Fijar ejes (x, y u oblicuos) y descomponer vectores</li>
+        <li>Plantear ecuaciones: ΣF<sub>x</sub>=0, ΣF<sub>y</sub>=0 (y Στ=0 si es C.R.)</li>
+        <li>Resolver el sistema algebraico e interpretar resultados</li>
+      </ol>
+    </div>
+
+    <!-- ── NUDO ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">9</span>Nudo — Ejemplo</div>
+      <p>El <em class="key">nudo</em> es la intersección de ≥ 3 cuerdas/varillas. Se aplica el D.C.L. al punto de intersección O.</p>
+
+      <div class="diagram-wrap">
+        <svg width="200" height="110" viewBox="0 0 200 110">
+          <defs>
+            <marker id="d1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c0392b"/></marker>
+            <marker id="d2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d6b44"/></marker>
+            <marker id="d3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a4480"/></marker>
+          </defs>
+          <!-- techo -->
+          <rect x="0" y="0" width="200" height="10" fill="#c9a84c"/>
+          <!-- cuerdas al techo -->
+          <line x1="100" y1="10" x2="60" y2="42" stroke="#888" stroke-width="1.5"/>
+          <line x1="100" y1="10" x2="140" y2="42" stroke="#888" stroke-width="1.5"/>
+          <!-- nudo -->
+          <circle cx="100" cy="42" r="5" fill="#1a1209"/>
+          <text x="104" y="40" font-size="9" fill="#1a1209" font-weight="700">O</text>
+          <!-- T1 -->
+          <line x1="100" y1="42" x2="60" y2="14" stroke="#c0392b" stroke-width="2" marker-end="url(#d1)"/>
+          <text x="40" y="12" font-size="10" fill="#c0392b" font-weight="700">T₁</text>
+          <!-- T2 -->
+          <line x1="100" y1="42" x2="140" y2="14" stroke="#1d6b44" stroke-width="2" marker-end="url(#d2)"/>
+          <text x="142" y="12" font-size="10" fill="#1d6b44" font-weight="700">T₂</text>
+          <!-- T=W (cuerda vertical) -->
+          <line x1="100" y1="42" x2="100" y2="72" stroke="#1a4480" stroke-width="2" marker-end="url(#d3)"/>
+          <text x="104" y="72" font-size="10" fill="#1a4480" font-weight="700">T=W</text>
+          <!-- bloque -->
+          <rect x="80" y="72" width="40" height="26" rx="2" fill="#c8ddf5" stroke="#1a4480" stroke-width="1.5"/>
+          <text x="90" y="89" font-size="10" fill="#1a4480" font-weight="700">A (m)</text>
+        </svg>
+      </div>
+
+      <div class="formula" style="font-size:.76rem;">
+        ΣF<sub>x</sub>: −T₁cosα + T₂cosβ = 0<br>
+        ΣF<sub>y</sub>: T₁sinα + T₂sinβ − W = 0
+      </div>
+    </div>
+
+    <!-- ── UNIDADES ── -->
+    <div class="card col3">
+      <div class="card-title"><span class="icon">10</span>Unidades de Fuerza</div>
+      <p style="font-size:.74rem; margin-bottom:6px;">La fuerza es una cantidad <em class="key">derivada</em>: F [=] M·L/T²</p>
+      <table>
+        <tr><th>Sistema</th><th>Unidad</th><th>Símbolo</th></tr>
+        <tr><td>Internacional</td><td>kg · m/s²</td><td><strong>Newton (N)</strong></td></tr>
+        <tr><td>CGS</td><td>g · cm/s²</td><td><strong>Dyna (D)</strong></td></tr>
+        <tr><td>Técnico</td><td>UTM · m/s²</td><td><strong>Kilopondio (Kgf)</strong></td></tr>
+        <tr><td>Inglés técnico</td><td>lbm · ft/s²</td><td><strong>Libra fuerza (lbf)</strong></td></tr>
+      </table>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- BANNER -->
+  <div class="banner">
+    <span>Ley de Hooke:</span> &nbsp;F = k · x &nbsp;·&nbsp; <span>Ley de Inercia (Newton 1ª):</span> &nbsp;ΣF = 0 ⇒ a = 0 &nbsp;·&nbsp; <span>Acción–Reacción (Newton 3ª):</span> &nbsp;F⃗<sub>AB</sub> = −F⃗<sub>BA</sub>
+  </div>
+
+  <div class="footer">
+    FÍSICA MECÁNICA · EQUILIBRIO DE UNA PARTÍCULA — CAPÍTULO 4 &nbsp;·&nbsp; Estática · Dinámica · Leyes de Newton
+  </div>
+
+</div>
+
+</body>
+</html>
